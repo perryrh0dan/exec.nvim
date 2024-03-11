@@ -59,6 +59,9 @@ M.exec = function()
     if M.state.bufnr == nil or not buffer_exists(M.state.bufnr) then
         vim.cmd('vnew')
         M.state.bufnr = vim.api.nvim_get_current_buf()
+        if vim.fn.exists('&winfixbuf') == 1 then
+            vim.cmd('set winfixbuf')
+        end
         vim.keymap.set('n', 'q', function() vim.cmd('bdelete! ' .. M.state.bufnr) end,
             { buffer = M.state.bufnr, desc = 'Delete buffer' })
     elseif M.state.bufnr ~= nil and buffer_exists(M.state.bufnr) and M.state.hidden then
