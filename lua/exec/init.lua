@@ -9,7 +9,7 @@ M.state = {
 
 M.exec = function()
     local progress = require('fidget').progress
-    local handle = progress.handle.create({ message = 'Running scipt', percentage = 0, lsp_client = { name = 'Execute' } })
+    local progress_handle = progress.handle.create({ message = 'Running scipt', percentage = 0, lsp_client = { name = 'Execute' } })
 
     local function get_directory(path)
         local t = {}
@@ -49,12 +49,20 @@ M.exec = function()
     local filePath = vim.fn.expand('%:p')
     local variables = read_env_file(filePath)
 
-    handle:report({ percentage = 50 })
+    progress_handle:report({ percentage = 50 })
 
     vim.api.nvim_command('silent! write!')
 
     local env_command = "chmod +x " .. filePath .. " && " .. variables .. filePath
-    local output = vim.fn.systemlist(env_command)
+
+    local handle = io.popen(env_command)
+    local stdout = handle:read("*a")
+    handle:close()
+
+    local output = {}
+    for token in string.gmatch(stdout, "[^%c]+") do
+        table.insert(output, token)
+    end
 
     if M.state.bufnr == nil or not buffer_exists(M.state.bufnr) then
         vim.cmd('vnew')
@@ -94,7 +102,7 @@ M.exec = function()
         pattern = '*',
     })
 
-    handle:finish()
+    progress_handle:finish()
 end
 
 return M
