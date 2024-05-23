@@ -55,7 +55,8 @@ M.exec = function()
 
     local env_command = "chmod +x " .. filePath .. " && " .. variables .. filePath
 
-    local handle = io.popen(env_command)
+    -- redirect stderr so it doesn't leak
+    local handle = io.popen(env_command .. " 2>&1")
     local stdout = handle:read("*a")
     handle:close()
 
