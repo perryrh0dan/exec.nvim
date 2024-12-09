@@ -17,9 +17,7 @@ vim.keymap.set('n', '<leader>e', function()
         require('exec').exec()
     end, { desc = "[E]xecute current file" })
 ```
+
 ## Roadmap
 
 - [ ] Execute only visual selected text
-
-
-
