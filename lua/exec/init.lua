@@ -64,56 +64,51 @@ M.exec = function()
         on_stdout = function(_, line)
             table.insert(output_lines, line)
         end,
-        on_stderr = function(a, b)
-            vim.print(a)
-            vim.print(b)
+        on_stderr = function(_, line)
+            table.insert(output_lines, line)
         end,
         on_exit = function(_, exit_code, _)
-            if exit_code == 0 then
-                vim.schedule(function()
-                    if M.state.bufnr == nil or not buffer_exists(M.state.bufnr) then
-                        vim.cmd('vnew')
-                        M.state.bufnr = vim.api.nvim_get_current_buf()
-                        if vim.fn.exists('&winfixbuf') == 1 then
-                            vim.cmd('set winfixbuf')
-                        end
-                        vim.keymap.set('n', 'q', function() vim.cmd('bdelete! ' .. M.state.bufnr) end,
-                            { buffer = M.state.bufnr, desc = 'Delete buffer' })
-                    elseif M.state.bufnr ~= nil and buffer_exists(M.state.bufnr) and M.state.hidden then
-                        vim.cmd('vert sb' .. M.state.bufnr)
+            vim.schedule(function()
+                if M.state.bufnr == nil or not buffer_exists(M.state.bufnr) then
+                    vim.cmd('vnew')
+                    M.state.bufnr = vim.api.nvim_get_current_buf()
+                    if vim.fn.exists('&winfixbuf') == 1 then
+                        vim.cmd('set winfixbuf')
                     end
+                    vim.keymap.set('n', 'q', function() vim.cmd('bdelete! ' .. M.state.bufnr) end,
+                        { buffer = M.state.bufnr, desc = 'Delete buffer' })
+                elseif M.state.bufnr ~= nil and buffer_exists(M.state.bufnr) and M.state.hidden then
+                    vim.cmd('vert sb' .. M.state.bufnr)
+                end
 
-                    M.state.hidden = false
+                M.state.hidden = false
 
-                    vim.api.nvim_buf_set_lines(M.state.bufnr, 0, vim.api.nvim_buf_line_count(M.state.bufnr), false, {})
-                    vim.api.nvim_buf_set_lines(M.state.bufnr, 0, #output_lines, false, output_lines)
+                vim.api.nvim_buf_set_lines(M.state.bufnr, 0, vim.api.nvim_buf_line_count(M.state.bufnr), false, {})
+                vim.api.nvim_buf_set_lines(M.state.bufnr, 0, #output_lines, false, output_lines)
 
-                    vim.api.nvim_create_autocmd({ 'BufHidden' }, {
-                        callback = function(data)
-                            if data.buf == M.state.bufnr then
-                                M.state.hidden = true
-                            end
-                        end,
-                        group = group,
-                        pattern = '*',
-                    })
+                vim.api.nvim_create_autocmd({ 'BufHidden' }, {
+                    callback = function(data)
+                        if data.buf == M.state.bufnr then
+                            M.state.hidden = true
+                        end
+                    end,
+                    group = group,
+                    pattern = '*',
+                })
 
-                    vim.api.nvim_create_autocmd({ 'BufDelete' }, {
-                        callback = function(data)
-                            if data.buf == M.state.bufnr then
-                                M.state.bufnr = nil
-                                M.state.hidden = true
-                            end
-                        end,
-                        group = group,
-                        pattern = '*',
-                    })
+                vim.api.nvim_create_autocmd({ 'BufDelete' }, {
+                    callback = function(data)
+                        if data.buf == M.state.bufnr then
+                            M.state.bufnr = nil
+                            M.state.hidden = true
+                        end
+                    end,
+                    group = group,
+                    pattern = '*',
+                })
 
-                    progress_handle:finish()
-                end)
-            else
                 progress_handle:finish()
-            end
+            end)
         end,
     })
 
