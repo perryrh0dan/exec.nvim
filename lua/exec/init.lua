@@ -25,7 +25,7 @@ local function read_env_file(path)
     local file = io.open(envPath, 'r')
     if file ~= nil then
         for line in file:lines() do
-            if string.find(line, '#') == nil then
+            if string.match(line, '^#') == nil then
                 variables = variables .. line .. ' '
             end
         end
